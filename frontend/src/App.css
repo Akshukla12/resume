@@ -1,0 +1,68 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: #f3f6fb;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #eaf3ff;
+}
+::-webkit-scrollbar-thumb {
+  background: #b3c7f7;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4f8cff;
+}
+
+.MuiDrawer-paper {
+  border-right: none !important;
+}
+
+.MuiAppBar-root {
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08) !important;
+}
+
+footer {
+  text-align: center;
+  color: #b3c7f7;
+  font-size: 15px;
+  margin: 20px 0 10px 0;
+  letter-spacing: 0.5px;
+}
+
+pre {
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  background: #f8fafd;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  color: #444;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .MuiDrawer-paper {
+    width: 100vw !important;
+    max-width: 260px;
+  }
+  .MuiToolbar-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .MuiPaper-root {
+    padding: 12px !important;
+  }
+  .MuiTypography-h5, .MuiTypography-h4 {
+    font-size: 1.2em !important;
+  }
+  pre {
+    font-size: 12px;
+  }
+}
