@@ -6,7 +6,28 @@ const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// --- CORS SETUP ---
+const allowedOrigins = [
+  'https://resume-frontend-ax19.onrender.com',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: function(origin, callback){
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    app.use(cors({
+  origin: function(origin, callback){
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+
+
 app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -40,7 +61,7 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
       return res.status(400).json({ error: 'Unsupported file type.' });
     }
 
-    // Shorten prompt for reliability
+    // Shorter prompt for reliability
     const trimmedResume = resumeText.trim().slice(0, 800);
     const trimmedJobDesc = jobDesc.trim().slice(0, 500);
 
@@ -64,45 +85,41 @@ Respond in this JSON format:
 }
 `;
 
-    // Prepare Gemini API request
-    const geminiPayload = {
-      contents: [
-        {
-          parts: [
-            { text: prompt }
-          ]
-        }
-      ]
-    };
-
     let aiResult;
     try {
-      const geminiResponse = await axios.post(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-        geminiPayload,
+      const orResponse = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: "deepseek/deepseek-chat-v3-0324:free", // or your model
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ]
+        },
         {
           headers: {
-            "Content-Type": "application/json",
-            "X-goog-api-key": process.env.GEMINI_API_KEY
+            "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json"
           },
-          timeout: 120000 // 2 minutes
+          timeout: 180000 // 3 minutes
         }
       );
 
-      // Extract the model's response text
-      const text = geminiResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const text = orResponse.data.choices[0].message.content;
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       aiResult = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
     } catch (err) {
       if (err.code === 'ECONNABORTED' || (err.response && err.response.status === 408)) {
-        return res.status(500).json({ error: 'Gemini API timed out. Please try again later or with a shorter prompt.' });
+        return res.status(500).json({ error: 'OpenRouter API timed out. Please try again later or with a shorter prompt.' });
       }
-      console.error('Gemini API Error:', err.response?.data || err.message);
-      return res.status(500).json({ error: 'Error communicating with Gemini API.' });
+      console.error('OpenRouter API Error:', err.response?.data || err.message);
+      return res.status(500).json({ error: 'Error communicating with OpenRouter API.' });
     }
 
     if (!aiResult) {
-      return res.status(500).json({ error: 'Failed to parse Gemini response.' });
+      return res.status(500).json({ error: 'Failed to parse OpenRouter response.' });
     }
 
     res.json({

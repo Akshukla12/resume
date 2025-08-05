@@ -117,10 +117,10 @@ function App() {
       formData.append('resume', resumeFile);
       formData.append('jobDesc', jobDesc);
 
-      const response = await fetch('http://localhost:5000/api/analyze', {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/analyze`, {
+  method: 'POST',
+  body: formData,
+});
 
       const data = await response.json();
 
